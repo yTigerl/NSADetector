@@ -1,0 +1,2 @@
+model_checkpoint_path: "2cnn 128_128 4 class.ckpt"
+all_model_checkpoint_paths: "2cnn 128_128 4 class.ckpt"
