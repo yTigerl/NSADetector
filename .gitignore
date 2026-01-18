@@ -1,8 +1,0 @@
-data/
-*.txt
-MODEL/
-*.h5
-*.ckpt
-*.index
-*.data-*
-checkpoint

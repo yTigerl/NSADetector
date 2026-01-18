@@ -19,8 +19,8 @@ from keras.models import load_model
 from classificationAggregator import *
 import matplotlib.pyplot as plt
 # from keras_siamese2_sandwich import *
-model_file = './MODEL/2cnn 64_128 1FC 128 4 class_20000.h5'
-type_file_path = "2cnn 64_128 1FC 128 4 class_20000 TEST 7531.txt"
+model_file = './MODEL/2cnn 64_64 1FC 128 4 class_20000 OLD.h5'
+type_file_path = "2cnn 64_128 1FC 128 4 class_20000 OLD TEST new attack 500 for dr.txt"
 num = 500000
 def euclidean_distance(vects):
     x, y = vects
@@ -167,6 +167,8 @@ sas_file = "./cnn_repeatData/data_input_format swap_add_swap onehot.txt"
 sssas_file = "./cnn_repeatData/data_input_format swap_swap_swap_add_swap onehot.txt"
 ssas_file = "./cnn_repeatData/data_input_format swap_swap_add_swap onehot.txt"
 
+
+
 bundle_raw_target = './cnn_repeatData/final target non onehot.txt'
 normalattack_target = './cnn_repeatData/final target normal onehot.txt'
 hybridattack_target = "./cnn_repeatData/final target hybrid onehot.txt"
@@ -174,21 +176,67 @@ manyattack_target = './cnn_repeatData/final target many onehot.txt'
 sas_target = "./cnn_repeatData/final target swap_add_swap onehot.txt"
 sssas_target = "./cnn_repeatData/final target swap_swap_swap_add_swap onehot.txt"
 ssas_target = "./cnn_repeatData/final target swap_swap_add_swap onehot.txt"
+#
+# CSA_file = "E:/Ethereum Data/Attack/cnn formatting/" + "CSA" + "/merge 42671_50202.txt"
+# CSA_target_file = "./cnn_repeatData/final target " + "CSA" + " merge 42671_50202.txt"
+# MLS_file = "E:/Ethereum Data/Attack/cnn formatting/" + "MLS" + "/merge 42671_50202.txt"
+# MLS_target_file = "./cnn_repeatData/final target " + "MLS" + " merge 42671_50202.txt"
+# LF_file = "E:/Ethereum Data/Attack/cnn formatting/" + "LF" + "/merge 42671_50202.txt"
+# LF_target_file = "./cnn_repeatData/final target " + "LF" + " merge 42671_50202.txt"
+# Non_file = "E:/Ethereum Data/Attack/cnn formatting/" + "Non" + "/merge 42671_50202.txt"
+# Non_target_file = "./cnn_repeatData/final target " + "Non" + " merge 42671_50202.txt"
 
-CSA_file = "E:/Ethereum Data/Attack/cnn formatting/" + "CSA" + "/merge 20000.txt"
-CSA_target_file = "./cnn_repeatData/final target " + "CSA" + " merge 20000.txt"
-MLS_file = "E:/Ethereum Data/Attack/cnn formatting/" + "MLS" + "/merge 20000.txt"
-MLS_target_file = "./cnn_repeatData/final target " + "MLS" + " merge 20000.txt"
-LF_file = "E:/Ethereum Data/Attack/cnn formatting/" + "LF" + "/merge 20000.txt"
-LF_target_file = "./cnn_repeatData/final target " + "LF" + " merge 20000.txt"
-Non_file = "E:/Ethereum Data/Attack/cnn formatting/" + "Non" + "/merge 20000.txt"
-Non_target_file = "./cnn_repeatData/final target " + "Non" + " merge 20000.txt"
+CSA_file = "E:/Ethereum Data/Attack/cnn formatting/" + "CSA" + "/merge.txt"
+CSA_target_file = "E:/Ethereum Data/Attack/label/" + "CSA" + " merge label.txt"
+MLS_file = "E:/Ethereum Data/Attack/cnn formatting/" + "MLS" + "/merge.txt"
+MLS_target_file = "E:/Ethereum Data/Attack/label/" + "MLS" + " merge label.txt"
+LF_file = "E:/Ethereum Data/Attack/cnn formatting/" + "LF" + "/merge.txt"
+LF_target_file = "E:/Ethereum Data/Attack/label/" + "LF" + " merge label.txt"
+Non_file = "E:/Ethereum Data/Attack/cnn formatting/" + "Non" + "/merge.txt"
+Non_target_file = "E:/Ethereum Data/Attack/label/" + "Non" + " merge label.txt"
+
+
+MPS_file = "E:/Ethereum Data/Attack/cnn formatting/" + "MPS" + "/merge.txt"
+MPS_target_file = "E:/Ethereum Data/Attack/label/" + "MPS" + " merge label.txt"
+
+HLM_file = "E:/Ethereum Data/Attack/cnn formatting/" + "HLM" + "/merge.txt"
+HLM_target_file = "E:/Ethereum Data/Attack/label/" + "HLM" + " merge label.txt"
+LPM_file = "E:/Ethereum Data/Attack/cnn formatting/" + "LPM" + "/merge.txt"
+LPM_target_file = "E:/Ethereum Data/Attack/label/" + "LPM" + " merge label.txt"
+MBS_file = "E:/Ethereum Data/Attack/cnn formatting/" + "MBS" + "/merge.txt"
+MBS_target_file = "E:/Ethereum Data/Attack/label/" + "MBS" + " merge label.txt"
+LR_file = "E:/Ethereum Data/Attack/cnn formatting/" + "LR" + "/merge.txt"
+LR_target_file = "E:/Ethereum Data/Attack/label/" + "LR" + " merge label.txt"
+MLL_file = "E:/Ethereum Data/Attack/cnn formatting/" + "MLL" + "/merge.txt"
+MLL_target_file = "E:/Ethereum Data/Attack/label/" + "MLL" + " merge label.txt"
 
 bundle_data, bundle_labels = read_data_num(Non_file, Non_target_file, num)
 normalattack_data, normalattack_labels = read_data_num(CSA_file, CSA_target_file, num)
 # hybridattack_data, hybridattack_labels = load_data(MPS_file, MPS_target_file)
 manyattack_data, manyattack_labels = read_data_num(MLS_file, MLS_target_file, num)
 LF_data, LF_labels = read_data_num(LF_file, LF_target_file, num)
+
+MPS_data, MPS_labels = read_data_num(MPS_file, MPS_target_file, num)
+HLM_data, HLM_labels = read_data_num(HLM_file, HLM_target_file, num)
+LPM_data, LPM_labels = read_data_num(LPM_file, LPM_target_file, num)
+MBS_data, MBS_labels = read_data_num(MBS_file, MBS_target_file, num)
+LR_data, LR_labels = read_data_num(LR_file, LR_target_file, num)
+MLL_data, MLL_labels = read_data_num(MLL_file, MLL_target_file, num)
+
+MPS_data = MPS_data[:500]
+HLM_data = HLM_data[:500]
+LPM_data = LPM_data[:500]
+MBS_data = MBS_data[:500]
+LR_data = LR_data[:500]
+MLL_data = MLL_data[:500]
+
+print(len(MPS_data))
+print(len(HLM_data))
+print(len(LPM_data))
+print(len(MBS_data))
+print(len(LR_data))
+print(len(MLL_data))
+
 
 # print(len(normalattack_data))
 
@@ -254,22 +302,25 @@ attackSamples.append(LF_data2)
 # sas_graph = sas_graph[10:]
 
 CSA_file = "E:/Ethereum Data/Attack/cnn formatting/" + "CSA" + "/merge 42671_50202.txt"
-CSA_target_file = "./cnn_repeatData/final target " + "CSA" + " merge 42671_50202.txt"
+CSA_target_file = "E:/Ethereum Data/Attack/label/" + "CSA" + " merge label 42671_50202.txt"
 MLS_file = "E:/Ethereum Data/Attack/cnn formatting/" + "MLS" + "/merge 42671_50202.txt"
-MLS_target_file = "./cnn_repeatData/final target " + "MLS" + " merge 42671_50202.txt"
+MLS_target_file = "E:/Ethereum Data/Attack/label/" + "MLS" + " merge label 42671_50202.txt"
 LF_file = "E:/Ethereum Data/Attack/cnn formatting/" + "LF" + "/merge 42671_50202.txt"
-LF_target_file = "./cnn_repeatData/final target " + "LF" + " merge 42671_50202.txt"
+LF_target_file = "E:/Ethereum Data/Attack/label/" + "LF" + " merge label 42671_50202.txt"
 Non_file = "E:/Ethereum Data/Attack/cnn formatting/" + "Non" + "/merge 42671_50202.txt"
-Non_target_file = "./cnn_repeatData/final target " + "Non" + " merge 42671_50202.txt"
+Non_target_file = "E:/Ethereum Data/Attack/label/" + "Non" + " merge label 42671_50202.txt"
 
-# bundle_data1, bundle_labels = read_data_num(Non_file, Non_target_file, num)
+bundle_data1, bundle_labels = read_data_num(Non_file, Non_target_file, num)
 normalattack_data1, normalattack_labels = read_data_num(CSA_file, CSA_target_file, num)
-# hybridattack_data, hybridattack_labels = load_data(MPS_file, MPS_target_file)
-# manyattack_data1, manyattack_labels = read_data_num(MLS_file, MLS_target_file, num)
-# LF_data1, LF_labels = read_data_num(LF_file, LF_target_file, num)
+hybridattack_data, hybridattack_labels = load_data(MPS_file, MPS_target_file)
+manyattack_data1, manyattack_labels = read_data_num(MLS_file, MLS_target_file, num)
+LF_data1, LF_labels = read_data_num(LF_file, LF_target_file, num)
+
+
+
 # print(len(LF_data1))
 # print(len(bundle_data1 ))
-print(len(normalattack_data1))
+# print(len(normalattack_data1))
 # print(len(manyattack_data1))
 
 def testAccuracy(model, threshold, major, testSamples, attackSamples, y_true, record_fire):
@@ -317,13 +368,23 @@ for threshold in np.arange(0.5, 0.51, 0.05):
 
 
     # print("hybrid")
-    normalAccuracy = testAccuracy(model, threshold, major, (normalattack_data1), attackSamples, [0]*len(normalattack_data1), testdir + "CSA incorrect" + file)
-    # LFAccuracy = testAccuracy(model, threshold, major, (LF_data1), attackSamples, [3]*len(LF_data1), testdir + "LF incorrect" + file)
-    # bundleAccuracy = testAccuracy(model, threshold, major, (bundle_data1), attackSamples, [1]*len(bundle_data1), testdir + "Non incorrect" + file)
-    # manyAccuracy = testAccuracy(model, threshold, major, (manyattack_data1), attackSamples, [2]*len(manyattack_data1), testdir + "MLS incorrect" + file)
-    # hybridAccuracy = testAccuracy(model, threshold, major, (hybridattack_data1), attackSamples,
-    #                               [1] * len(hybridattack_data1), "./cnn_repeatData/hybrid incorrect" + file)
+    normalAccuracy = testAccuracy(model, threshold, major, (normalattack_data1[:500]), attackSamples, [0]*len(normalattack_data1[:500]), testdir + "CSA incorrect" + file)
+    LFAccuracy = testAccuracy(model, threshold, major, (LF_data1[:500]), attackSamples, [3]*len(LF_data1[:500]), testdir + "LF incorrect" + file)
+    bundleAccuracy = testAccuracy(model, threshold, major, (bundle_data1[:500]), attackSamples, [1]*len(bundle_data1[:500]), testdir + "Non incorrect" + file)
+    manyAccuracy = testAccuracy(model, threshold, major, (manyattack_data1[:500]), attackSamples, [2]*len(manyattack_data1[:500]), testdir + "MLS incorrect" + file)
 
+    MPSAccuracy = testAccuracy(model, threshold, major, (MPS_data), attackSamples, [-1] * len(MPS_data),
+                                testdir + "MPS incorrect" + file)
+    HLMAccuracy = testAccuracy(model, threshold, major, (HLM_data), attackSamples, [-1] * len(HLM_data),
+                               testdir + "HLM incorrect" + file)
+    LRAccuracy = testAccuracy(model, threshold, major, (LR_data), attackSamples, [-1] * len(LR_data),
+                               testdir + "LR incorrect" + file)
+    LPMAccuracy = testAccuracy(model, threshold, major, (LPM_data), attackSamples, [-1] * len(LPM_data),
+                               testdir + "LPM incorrect" + file)
+    MBSAccuracy = testAccuracy(model, threshold, major, (MBS_data), attackSamples, [-1] * len(MBS_data),
+                               testdir + "MBS incorrect" + file)
+    MLLAccuracy = testAccuracy(model, threshold, major, (MLL_data), attackSamples, [-1] * len(MLL_data),
+                               testdir + "MLL incorrect" + file)
     # manyAccuracies.append(manyAccuracy)
     # acc.write(f"{str(normalAccuracy)} {str(hybridAccuracy)} {str(bundleAccuracy)} {str(manyAccuracy)} {str(sasAccuracy)} {str(sssasAccuracy)} {str(ssasAccuracy)}\n")
     # acc.flush()
@@ -337,7 +398,7 @@ print(manyAccuracies)
 
 # print(len(LF_data1))
 # print(len(bundle_data1 ))
-print(len(normalattack_data1))
+# print(len(normalattack_data1))
 # print(len(manyattack_data1))
 
 accuracy = []

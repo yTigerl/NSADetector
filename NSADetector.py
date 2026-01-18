@@ -229,6 +229,27 @@ def create_gcn_model12(input_shapes, output_units):
     # # X_2 = Dropout(0.1)(X_2)
     X_2 = Dense(128, activation='relu')(X_2)
     return Model(inputs=[X_in, A_in], outputs=X_2)
+
+def create_gcn_model13(input_shapes, output_units):
+    #  2GCN 64_64 1FC 128 4 class_20000
+    X_in = Input(shape=(None, address_embedding_dim * 4 + 4), name='X_in')
+    A_in = Input(shape=(None, None), name='A_in')
+    X_2 = GCNConv(128,  activation='relu')([X_in, A_in])
+    X_2 = Dropout(0.1)(X_2)
+    # X_2 = GlobalAvgPool()(X_2)  # 全局平均池化
+    X_2 = GCNConv(128, activation='relu')([X_2, A_in])
+    X_2 = Dropout(0.1)(X_2)
+    # X_2 = GCNConv(128,  activation='relu')([X_2, A_in])
+    # X_2 = Dropout(0.1)(X_2)
+    X_2 = GlobalAveragePooling1D()(X_2)  # 全局平均池化
+    # X_2 = GlobalAvgPool()(X_2)
+    # X_2 = Dense(64, activation='relu')(X_2)
+    # X_2 = Dropout(0.1)(X_2)
+    # X_2 = Dense(128, activation='relu')(X_2)
+    # # X_2 = Dropout(0.1)(X_2)
+    X_2 = Dense(128, activation='relu')(X_2)
+    return Model(inputs=[X_in, A_in], outputs=X_2)
+
 def eucl_dist_output_shape(shapes):
     shape1, shape2 = shapes
     return (shape1[0], 1)
@@ -246,7 +267,7 @@ def euclidean_distance(vects):
 
 # 孪生网络模型
 def create_siamese_model(input_shapes, output_units):
-    base_model = create_gcn_model10(input_shapes, output_units)
+    base_model = create_gcn_model13(input_shapes, output_units)
 
     X_in1 = Input(shape=(None, address_embedding_dim * 3 + 5), name='X_in1')
     A_in1 = Input(shape=(None, None), name='A_in1')
@@ -273,7 +294,7 @@ def create_siamese_model(input_shapes, output_units):
 
 model = create_siamese_model(0, 0)
 # base model3 './MODEL/GCN_action_node_siamese_model3GCN 5 class.h5'
-model.load_weights(model_file)
+# model.load_weights(model_file)
 acc = open("./Test/new 1000 accurency major.txt", "a+")
 testdir = "./Test/"
 
@@ -438,21 +459,8 @@ LF_graph1 = from_feature_to_graph_actionnode(LF_data1)
 
 # with open("./repeatTestData/incorrect.txt", 'a') as f_out:
 
-def testAccuracy(model, threshold, major, testSamples, attackSamples, y_true, record_fire):
-    # print(verifyType)
-    # sasattack_graph1 = from_feature_to_graph_actionnode(hybridattack_data1)
-    typeincorrect = open(record_fire, "a+")
-    incorrect = 0
-    for i in range(len(testSamples)):
-        attackType = getAttackType(testSamples[i], model, threshold, major, attackSamples)
-        if attackType != y_true[i]:
-            incorrect += 1
-            typeincorrect.write(str(i) + '\n')
-            typeincorrect.write(str(incorrect) + ' ' + str(attackType) + '\n')
-            typeincorrect.flush()
-    typeincorrect.close()
-    return incorrect / len(y_true)
-    # print()
+
+# print()
 
 threshold = 0.7
 major = len(attackSamples[0]) * 1 / 2
@@ -476,13 +484,13 @@ for threshold in np.arange(0.75, 0.76, 0.05):
     # sssasAcc = testAccuracy(model, threshold, major, sssas_graph1, attackSamples, [-1]*len(sssas_data1), testdir + "sssas incorrect" + file)
     # # print("swap swap swap add swap")
     # ssasAcc = testAccuracy(model, threshold, major, ssas_graph1, attackSamples, [-1]*len(ssas_data1), testdir + "ssas incorrect" + file)
-    LFAcc = testAccuracy(model, threshold, major, LF_graph1, attackSamples, [3]*len(LF_data1), testdir + "LF incorrect" + file)
-    normalAccuracy = testAccuracy(model, threshold, major, normalattack_graph1, attackSamples, [0]*len(normalattack_data1), testdir + "normal incorrect" + file)
-    # hybridAccuracy = testAccuracy(model, threshold, major, (hybridattack_graph1), attackSamples, [4]*len(hybridattack_data1), testdir + "hybrid incorrect" + file)
-    # asrAccuracy = testAccuracy(model, threshold, major, (asr_graph1), attackSamples, [4]*len(asr_data1), testdir + "asr incorrect" + file)
-    manyAccuracy = testAccuracy(model, threshold, major, (manyattack_graph1), attackSamples,
-                            [2] * len(manyattack_data1), testdir + "many incorrect" + file)
-    bundleAccuracy = testAccuracy(model, threshold, major, (bundle_graph1), attackSamples, [1]*len(bundle_data1), testdir + "bundle incorrect" + file)
+    # LFAcc = testAccuracy(model, threshold, major, LF_graph1, attackSamples, [3]*len(LF_data1), testdir + "LF incorrect" + file)
+    # normalAccuracy = testAccuracy(model, threshold, major, normalattack_graph1, attackSamples, [0]*len(normalattack_data1), testdir + "normal incorrect" + file)
+    # # hybridAccuracy = testAccuracy(model, threshold, major, (hybridattack_graph1), attackSamples, [4]*len(hybridattack_data1), testdir + "hybrid incorrect" + file)
+    # # asrAccuracy = testAccuracy(model, threshold, major, (asr_graph1), attackSamples, [4]*len(asr_data1), testdir + "asr incorrect" + file)
+    # manyAccuracy = testAccuracy(model, threshold, major, (manyattack_graph1), attackSamples,
+    #                         [2] * len(manyattack_data1), testdir + "many incorrect" + file)
+    # bundleAccuracy = testAccuracy(model, threshold, major, (bundle_graph1), attackSamples, [1]*len(bundle_data1), testdir + "bundle incorrect" + file)
 
     # HLMAccuracy = testAccuracy(model, threshold, major, (HLM_graph1), attackSamples,
     #                               [-1] * len(HLM_data1), testdir + "HLM incorrect" + file)

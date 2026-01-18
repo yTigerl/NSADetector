@@ -2,9 +2,7 @@ import random
 import zipfile
 
 import tensorflow as tf
-from keras.layers import Input, Dense
-from keras.models import Model
-from spektral.layers import GATConv
+
 from spektral.data import Graph, Dataset, Loader
 import numpy as np
 from build_dataset import *
@@ -24,6 +22,7 @@ normalattack_file = '../UniswapV2/sandwichAttack/sandwichAttack data 17500499to1
 hybridattack_file = '../UniswapV2/sandwichAttack/hybrid sandwichAttack data 17500499to17600499.txt'
 manyattack_file = '../UniswapV2/sandwichAttack/many sandwichAttack data 17500499to17600499.txt'
 add_swap_remove_file = "F:/etherem data/test/attack_type9/UniswapV3.txt"
+add_swap_remove_file = '../UniswapV3/sandwichAttack/asrAttack data 17500499to17600499.txt'
 
 # bundle_raw_file = '../UniswapV2/Bundles/bundle data without all 17400498to17500498.txt'
 # normalattack_file = '../UniswapV2/sandwichAttack/sandwichAttack data 17400498to17500498.txt'
@@ -38,12 +37,12 @@ bundle_fianl_target = "./data/gnn_action_node final target 17500499to17600499 in
 # Final Bundle Matrix
 bundle_matrix = "./data/data_input_format_gnn_action_node 17500499to17600499 index from 1.txt"
 
-bundle_process_file = "./data/gnn_action_node data add 17500499to17600499.txt"
-bundle_process_target = "./data/gnn_action_node target add 17500499to17600499.txt"
-bundle_fianl_target = "./data/gnn_action_node final target add 17500499to17600499.txt"
+bundle_process_file = "./data/gnn_action_node data realadd all 17500499to17600499 remove 1 1 high.txt"
+bundle_process_target = "./data/gnn_action_node target realall add 17500499to17600499 remove 1 1 high.txt"
+bundle_fianl_target = "./data/gnn_action_node final all target realadd 17500499to17600499 remove 1 1 high.txt"
 
 # Final Bundle Matrix
-bundle_matrix = "./data/data_input_format_gnn_action_node add 17500499to17600499.txt"
+bundle_matrix = "./data/data_input_format_gnn_action_node realadd all 17500499to17600499 remove 1 1 high.txt"
 
 fileDir2 = "E:/transactiondata/"
 #
@@ -75,8 +74,135 @@ def ToFloat(str):
 def normalize(value, min_val, max_val):
     return (value - min_val) / (max_val - min_val)
 
+def process_files_with_tokenAddress(input_files, data_file, target_file):
+    pair_to_token_map = from_pair_to_token("F:/etherem data/Defi exchange/UniswapV2/UniswapV2_PairInfo.csv")
+    pair_to_index_map = {}
+    send_to_index_map = {}
+    to_to_index_map = {}
+    token_to_index_map = {}
+    token_index = 0
+    pair_index = 0
+    send_index = 0
+    to_index = 0
+    hex_to_index_map = {}
+    hex_addresses = []
+    prev_block_number = None
+    prev_transaction_hash = None
+    global_index = 0
+    min_amount = float('inf')
+    max_amount = float('-inf')
+
+    with open(data_file, 'w') as f_out, open(target_file, 'w') as f_target:
+        for i in range(len(input_files)):
+            input_file = input_files[i]
+            with open(input_file, 'r') as f_in:
+                data = []
+                hasPair = True
+                for line in f_in:
+                    if line.strip():  # 跳过空行
+                        if not hasPair:
+                            continue
+                        # pairAddress, send, to, amount0In, amount1In, amount0Out, amount1Out, blockNumber, transactionHash = line.split()
+                        if i == 1:
+                            pairAddress, send, to, amount0In, amount1In, amount0Out, amount1Out, blockNumber, type, transactionHash = line.split()
+                        else:
+                            pairAddress, send, to, amount0In, amount1In, amount0Out, amount1Out, blockNumber, transactionHash = line.split()
+                            type = 1
+                        # 如果地址是新出现的，则将其映射为新的全局索引
+                        if pairAddress not in hex_to_index_map:
+                            hex_to_index_map[pairAddress] = global_index
+                            global_index += 1
+                        if send not in hex_to_index_map:
+                            hex_to_index_map[send] = global_index
+                            global_index += 1
+                        if to not in hex_to_index_map:
+                            hex_to_index_map[to] = global_index
+                            global_index += 1
+                        if pairAddress not in pair_to_token_map:
+                            hasPair = False
+                            continue
+
+
+                        pairAddress_index = hex_to_index_map[pairAddress]
+                        send_index = hex_to_index_map[send]
+                        to_index = hex_to_index_map[to]
+                        blockNumber = int(blockNumber)
+                        # print(pair_to_token_map[pairAddress])
+
+                        tokenAddress0 = pair_to_token_map[pairAddress]['tokenAddress0']
+                        tokenAddress1 = pair_to_token_map[pairAddress]['tokenAddress1']
+                        if tokenAddress0 not in token_to_index_map:
+                            token_to_index_map[tokenAddress0] = token_index
+                            token_index += 1
+                        if tokenAddress1 not in token_to_index_map:
+                            token_to_index_map[tokenAddress1] = token_index
+                            token_index += 1
+
+
+                        token0_index = token_to_index_map[tokenAddress0]
+                        token1_index = token_to_index_map[tokenAddress1]
+
+                        # print(amount0In)
+                        # if amount0In
+                        # 更新最小值和最大值
+                        min_amount = float('inf')
+                        max_amount = float('-inf')
+                        min_amount = min(min_amount, ToFloat(amount0In), ToFloat(amount1In), ToFloat(amount0Out),
+                                         ToFloat(amount1Out))
+                        max_amount = max(max_amount, ToFloat(amount0In), ToFloat(amount1In), ToFloat(amount0Out),
+                                         ToFloat(amount1Out))
+
+                        amount0, amount1 = 0, 0
+                        if type == 0:
+                            amount0 = normalize(ToFloat(amount0In), min_amount, max_amount)
+                            amount1 = normalize(ToFloat(amount1In), min_amount, max_amount)
+                        elif type == 2:
+                            amount0 = -normalize(ToFloat(amount0Out), min_amount, max_amount)
+                            amount1 = -normalize(ToFloat(amount1Out), min_amount, max_amount)
+                        elif ToFloat(amount0In) > 0:
+                            amount0 = normalize(ToFloat(amount0In), min_amount, max_amount)
+                            amount1 = -(normalize(ToFloat(amount1Out), min_amount, max_amount))
+                        else:
+                            amount0 = -normalize(ToFloat(amount0Out), min_amount, max_amount)
+                            amount1 = normalize(ToFloat(amount1In), min_amount, max_amount)
+                        # if transactionHash != prev_transaction_hash and prev_transaction_hash is not None and blockNumber == prev_block_number:
+                        #     f_out.write('-1 -1 -1 -1 -1 -1 -1 -1\n')
+
+                        data.append([pairAddress_index, token0_index, token1_index, send_index, to_index, type, amount0, amount1, transactionHash])
+                        # f_out.write(
+                        #     f"{pairAddress_index} {token0_index} {token1_index} {send_index} {to_index} {type} {amount0} {amount1} {transactionHash} \n")
+
+                        prev_block_number = blockNumber
+                        prev_transaction_hash = transactionHash
+                    else:
+                        if hasPair:
+                            for sub_array in data:
+                                line = ' '.join(map(str, sub_array))  # 将子数组的每个元素转换为字符串并用逗号分隔
+                                f_out.write(line + '\n')  # 写入文件并换行
+                            f_out.write('\n')
+                            if i <= 4:
+                                f_target.write(str(i) + '\n')
+                            else:
+                                f_target.write(str(0) + '\n')
+                        prev_transaction_hash = None
+                        data = []
+                        # 只看一组交易的相对index
+                        hex_to_index_map = {}
+                        token_to_index_map = {}
+                        global_index = 0
+                        token_index = 0
+                        min_amount = float('inf')
+                        max_amount = float('-inf')
+                        hasPair = True
+            f_target.write(str(i) + '\n')
+
 def process_files(input_files, data_file, target_file):
     # pair_to_token_map = from_pair_to_token("F:/etherem data/Defi exchange/UniswapV2/UniswapV2_PairInfo.csv")
+    # theZIP1 = zipfile.ZipFile(fileDir2 + files2[0] + ".zip", 'r')
+    # theCSV1 = theZIP1.open(files2[0] + ".csv")
+    fileDir2 = "E:/Ethereum Data/from_to/"
+    #
+    files2 = ["block_transactions"]
     theZIP1 = zipfile.ZipFile(fileDir2 + files2[0] + ".zip", 'r')
     theCSV1 = theZIP1.open(files2[0] + ".csv")
     head1 = theCSV1.readline()
@@ -96,7 +222,7 @@ def process_files(input_files, data_file, target_file):
     global_index = 0
     min_amount = float('inf')
     max_amount = float('-inf')
-
+    reset = False
     with open(data_file, 'w') as f_out, open(target_file, 'w') as f_target:
         for i in range(len(input_files)):
             oldBlockNumber = -1
@@ -106,6 +232,7 @@ def process_files(input_files, data_file, target_file):
             head1 = theCSV1.readline()
             oneLine1 = theCSV1.readline().decode("utf-8").strip()
             input_file = input_files[i]
+            err = False
             with open(input_file, 'r') as f_in:
                 data = []
                 hasPair = True
@@ -126,7 +253,7 @@ def process_files(input_files, data_file, target_file):
                             amount0 = ToFloat(amount0)
                             amount1 = ToFloat(amount1)
                             if type == 1 and amount0 > 0:
-                                amount0In, amount1In, amount0Out, amount1Out = amount0, 0, 0, -1*amount1Out
+                                amount0In, amount1In, amount0Out, amount1Out = amount0, 0, 0, -1*amount1
                             elif type == 1 and amount0 < 0:
                                 amount0In, amount1In, amount0Out, amount1Out = 0, amount1, -1 * amount0, 0
                             elif type == 0:
@@ -134,40 +261,70 @@ def process_files(input_files, data_file, target_file):
                             elif type == 2:
                                 amount0In, amount1In, amount0Out, amount1Out = 0, 0, amount0, amount1
 
-                            if int(blockNumber) < 17500499:
-                                continue
-                            if int(blockNumber) > 17880000:
-                                break
-                            if int(blockNumber) != oldBlockNumber:
-                                oldBlockNumber = int(blockNumber)
-                                txsendtoDic = {}
-                                while (oneLine1 != ""):
-                                    oneArray1 = oneLine1.split(",")
-                                    blockNumber1 = int(oneArray1[0])
-                                    # print(blockNumber1)
-                                    # print(oldBlockNumber)
-                                    if blockNumber1 == oldBlockNumber:
-                                        transactionHash1 = oneArray1[1]
-                                        sender1 = oneArray1[2]
-                                        to1 = oneArray1[3]
-                                        txsendtoDic[transactionHash1] = (sender1, to1)
-                                        oneLine1 = theCSV1.readline().decode("utf-8").strip()
-                                        # print(oneLine1)
-                                    elif blockNumber1 < oldBlockNumber:
-                                        oneLine1 = theCSV1.readline().decode("utf-8").strip()
-                                    else:
-                                        break
-                            send = txsendtoDic[transactionHash][0]
-                            to = txsendtoDic[transactionHash][1]
+                            # if int(blockNumber) < 17500499:
+                            #     continue
+                            # if int(blockNumber) > 17990000 and int(blockNumber) < 18000000:
+                            #     reset = False
+                            #     continue
+                            # if int(blockNumber) > 18500000 and int(blockNumber) < 19000000:
+                            #     reset = False
+                            #     continue
+                            # if int(blockNumber) >= 18000000 and int(blockNumber) <= 18500000 and reset == False:
+                            #     # oldBlockNumber = -1
+                            #     reset = True
+                            #     fileDir2 = "E:/Ethereum Data/from_to/"
+                            #     #
+                            #     files2 = ["block_transactions_18000000_18999999"]
+                            #     txsendtoDic = {}
+                            #     theZIP1 = zipfile.ZipFile(fileDir2 + files2[0] + ".zip", 'r')
+                            #     theCSV1 = theZIP1.open(files2[0] + ".csv")
+                            #     head1 = theCSV1.readline()
+                            #     oneLine1 = theCSV1.readline().decode("utf-8").strip()
+                            # if int(blockNumber) >= 19000000 and reset == False:
+                            #     # oldBlockNumber = -1
+                            #     reset = True
+                            #     fileDir2 = "E:/Ethereum Data/from_to/"
+                            #     #
+                            #     files2 = ["block_transactions_19000000_19856642"]
+                            #     txsendtoDic = {}
+                            #     theZIP1 = zipfile.ZipFile(fileDir2 + files2[0] + ".zip", 'r')
+                            #     theCSV1 = theZIP1.open(files2[0] + ".csv")
+                            #     head1 = theCSV1.readline()
+                            #     oneLine1 = theCSV1.readline().decode("utf-8").strip()
+                            #     # print(oldBlockNumber)
+                            #
+                            # if int(blockNumber) > 19500000:
+                            #     break
+                            # if int(blockNumber) != oldBlockNumber:
+                            #     oldBlockNumber = int(blockNumber)
+                            #     txsendtoDic = {}
+                            #     while (oneLine1 != ""):
+                            #         oneArray1 = oneLine1.split(",")
+                            #         blockNumber1 = int(oneArray1[0])
+                            #         # print(blockNumber1)
+                            #         # print(oldBlockNumber)
+                            #         if blockNumber1 == oldBlockNumber:
+                            #             transactionHash1 = oneArray1[1]
+                            #             sender1 = oneArray1[2]
+                            #             to1 = oneArray1[3]
+                            #             txsendtoDic[transactionHash1] = (sender1, to1)
+                            #             oneLine1 = theCSV1.readline().decode("utf-8").strip()
+                            #             # print(oneLine1)
+                            #         elif blockNumber1 < oldBlockNumber:
+                            #             oneLine1 = theCSV1.readline().decode("utf-8").strip()
+                            #         else:
+                            #             break
+                            # send = txsendtoDic[transactionHash][0]
+                            # to = txsendtoDic[transactionHash][1]
 
                         else:
                             pairAddress, send, to, amount0In, amount1In, amount0Out, amount1Out, blockNumber, transactionHash = line.split()
                             type = 1
 
-                        if int(blockNumber) < 17500499:
-                            continue
-                        if int(blockNumber) > 17880000:
-                            break
+                        # if int(blockNumber) < 17500499:
+                        #     continue
+                        # if int(blockNumber) > 17880000:
+                        #     break
 
 
 
@@ -201,6 +358,9 @@ def process_files(input_files, data_file, target_file):
                         max_amount = max(max_amount, ToFloat(amount0In), ToFloat(amount1In), ToFloat(amount0Out),
                                          ToFloat(amount1Out))
 
+                        if min_amount == max_amount:
+                            err = True
+                            continue
                         amount0, amount1 = 0, 0
                         if type == 0:
                             amount0 = normalize(ToFloat(amount0In), min_amount, max_amount)
@@ -224,12 +384,15 @@ def process_files(input_files, data_file, target_file):
                         prev_block_number = blockNumber
                         prev_transaction_hash = transactionHash
                     else:
-                        if len(data) != 0:
+                        if len(data) != 0 and err == False:
                             for sub_array in data:
                                 line = ' '.join(map(str, sub_array))  # 将子数组的每个元素转换为字符串并用逗号分隔
                                 f_out.write(line + '\n')  # 写入文件并换行
                             f_out.write('\n')
-                            f_target.write(str(i) + '\n')
+                            if i <= 4:
+                                f_target.write(str(i) + '\n')
+                            else:
+                                f_target.write(str(0) + '\n')
                         prev_transaction_hash = None
                         data = []
                         # 只看一组交易的相对index
@@ -239,6 +402,7 @@ def process_files(input_files, data_file, target_file):
                         token_index = 0
                         min_amount = float('inf')
                         max_amount = float('-inf')
+                        err = False
                         hasPair = True
             f_target.write(str(i) + '\n')
 num = 80000
@@ -389,6 +553,12 @@ def from_feature_to_graph_actionnode(transactions):
             type_ = float(type_)
             amount0 = float(amount0)
             amount1 = float(amount1)
+            # token0_idx = token_vocab[token0]
+            # token1_idx = token_vocab[token1]
+            # from_idx = address_vocab[from_addr]
+            # to_idx = address_vocab[to_addr]
+            # token0_idx = token0
+            # token1_idx = token1
             from_idx = from_addr
             to_idx = to_addr
             type_one_hot = [0, 0, 0, 0]
@@ -400,6 +570,13 @@ def from_feature_to_graph_actionnode(transactions):
                 type_one_hot[2] = 1
             else:
                 type_one_hot[3] = 1
+
+            # if token0_idx not in node_features:
+            #     node_features[token0_idx] = token0_idx
+            # if token1_idx not in node_features:
+            #     node_features[token1_idx] = token1_idx
+
+            # edge_feature = tf.concat([tf.convert_to_tensor(from_idx, dtype=tf.float32), tf.convert_to_tensor(to_idx, dtype=tf.float32), tf.convert_to_tensor(type_one_hot, dtype=tf.float32), tf.convert_to_tensor([amount0, amount1], dtype=tf.float32)], axis=-1)
             node_feature = np.concatenate([
                 np.expand_dims(np.array(pair, dtype=np.float32), axis=-1),
                 # np.expand_dims(np.array(token, dtype=np.float32), axis=-1),
@@ -421,35 +598,83 @@ def from_feature_to_graph_actionnode(transactions):
         # 邻接矩阵转换为稀疏矩阵
         adj_matrix = np.zeros((len(node_features), len(node_features)))
 
+        # for i in range(len(tx)-1):
+        #     for j in range(i, len(tx)):
+        #         if tx[i][0] == tx[j][0]:
+        #             adj_matrix[i, j] = 1
+        #             # adj_matrix[j, i] = 1
+        #             edge_features.append([1])
+        # adj_matrix[len(tx)-1, len(tx)-1] = 1   # 什么意思？
+        # edge_features.append([1])
+        # for i in range(len(tx) - 1):
+        #     if tx[i+1][-1] == tx[i][-1] and tx[i][0] != tx[j][0] and adj_matrix[i, i+1] != 1:
+        #         edge_features.append([0])
+        #         adj_matrix[i, i+1] = 1
+        # for i in range(len(tx) - 1):
+        #     oldTxHash = tx[i][-1]
+        #     oldCurrentTxHah = None
+        #     # next = False
+        #     for j in range(i+1, len(tx)):
+        #         currentTxHah = tx[j][-1]
+        #         if currentTxHah != oldTxHash and currentTxHah != oldCurrentTxHah and tx[i][0] != tx[j][0]:
+        #             oldCurrentTxHah = currentTxHah
+        #             adj_matrix[i, j] = 1
+        #             edge_features.append([0])
+        #         if currentTxHah != oldTxHash and oldCurrentTxHah != None and currentTxHah == oldCurrentTxHah and tx[i][0] != tx[j][0]:
+        #             adj_matrix[i, j] = 1
+        #             edge_features.append([0])
+        #         if currentTxHah != oldTxHash and oldCurrentTxHah != None and currentTxHah != oldCurrentTxHah:
+        #             break
         for i in range(len(tx)-1):
-            for j in range(i, len(tx)):
+            for j in range(i+1, len(tx)):
                 if tx[i][0] == tx[j][0]:
                     adj_matrix[i, j] = 1
+                    edges.append([i, j])
                     # adj_matrix[j, i] = 1
                     edge_features.append([1])
-        adj_matrix[len(tx)-1, len(tx)-1] = 1
-        edge_features.append([1])
-        for i in range(len(tx) - 1):
-            if tx[i+1][-1] == tx[i][-1] and tx[i][0] != tx[j][0] and adj_matrix[i, i+1] != 1:
-                edge_features.append([0])
-                adj_matrix[i, i+1] = 1
+        # adj_matrix[len(tx)-1, len(tx)-1] = 1   #
+        # edge_features.append([1])
+        # for i in range(len(tx) - 1):
+        #     if tx[i+1][-1] == tx[i][-1] and tx[i][0] != tx[j][0] and adj_matrix[i, i+1] != 1:
+        #         edge_features.append([0])
+        #         adj_matrix[i, i+1] = 1
+        #         edges.append([i, i+1])
         for i in range(len(tx) - 1):
             oldTxHash = tx[i][-1]
             oldCurrentTxHah = None
             # next = False
             for j in range(i+1, len(tx)):
                 currentTxHah = tx[j][-1]
-                if currentTxHah != oldTxHash and currentTxHah != oldCurrentTxHah and tx[i][0] != tx[j][0]:
+                if currentTxHah != oldTxHash and oldCurrentTxHah != None and currentTxHah != oldCurrentTxHah:
+                    break
+                if currentTxHah != oldTxHash and oldCurrentTxHah != None and currentTxHah == oldCurrentTxHah:
+                    adj_matrix[i, j] = 1
+                    edge_features.append([0])
+                    edges.append([i, j])
+
+                if currentTxHah != oldTxHash and currentTxHah != oldCurrentTxHah and oldCurrentTxHah == None:
                     oldCurrentTxHah = currentTxHah
                     adj_matrix[i, j] = 1
                     edge_features.append([0])
-                if currentTxHah != oldTxHash and oldCurrentTxHah != None and currentTxHah == oldCurrentTxHah and tx[i][0] != tx[j][0]:
-                    adj_matrix[i, j] = 1
-                    edge_features.append([0])
-                if currentTxHah != oldTxHash and oldCurrentTxHah != None and currentTxHah != oldCurrentTxHah:
-                    break
+                    edges.append([i, j])
 
+
+
+                # if tx[i][1] == tx[j][1]:
+                #     adj_matrix[i, j] = 1
+                #     adj_matrix[j, i] = 1
+                # if tx[i][2] == tx[j][2]:
+                #     adj_matrix[i, j] = 1
+                #     adj_matrix[j, i] = 1
+        # for edge in edges:
+        #     adj_matrix[int(edge[0]), int(edge[1])] = 1
+            # adj_matrix[edge[1], edge[0]] = 1  # 无向图
+
+        # adj_matrix = tf.convert_to_tensor(adj_matrix, dtype=tf.float32)
         edge_features = np.array(edge_features).T
+        # print(adj_matrix)
+        # print(edge_features)
+        # graph = Graph(x=node_features, a=edge_index, e=edge_features, y=np.array([1]))  # 假设所有样本标签为1
         graph = Graph(x=node_features, a=adj_matrix, e=edge_features)
         output.append(graph)
     return output
@@ -466,7 +691,7 @@ def load_data(feature_file, label_file):
     current_sample = []
     # print(feature_lines)
     sample = 0
-    counts = [0, 0, 0, 0, 0]
+    counts = [0, 0, 0, 0, 0, 0]
     for feature_line in feature_lines:
         if feature_line.strip():  # 跳过空行
             # print(feature_line)
@@ -485,11 +710,31 @@ def load_data(feature_file, label_file):
             current_sample = []
             sample += 1
 
+    # if sample < len(label_lines) and counts[int(label_lines[sample].strip())] < num and np.array(current_sample).size == 7*5*8:
+    #
+    #     data.append(np.array(current_sample).reshape((1, 35, 8)))
+    #     current_sample = []
+    #     target.append(int(label_lines[sample].strip()))
+    #     counts[int(label_lines[sample].strip())] += 1
+
     return np.array(data), np.array(target)
+
+def load_gnnsandwichTrainDataset(feature_file, label_file, num_classes, classes):
+    train_data, train_labels = load_data(feature_file, label_file)
+    # print(train_data[0:2])
+    print(train_data.shape)
+    # print(len(train_labels))
+    # num_classes = 4
+    # classes = [0, 1, 2, 3]
+    graphs = from_feature_to_graph_actionnode(train_data)
+    category = [np.where(train_labels == classes[i])[0] for i in range(num_classes)]
+    # print(category.shape)
+    tr_pairs, tr_y = create_pairs(graphs, category, num_classes)
+    return tr_pairs, tr_y
 
 def buildTrainData():
     print("siamese")
-    input_files = [manyattack_file, bundle_raw_file, normalattack_file, hybridattack_file, add_swap_remove_file]
+    input_files = [manyattack_file, bundle_raw_file, normalattack_file, hybridattack_file, add_swap_remove_file, '../UniswapV2/sandwichAttack/many sandwichAttack data 17400498to17500498.txt', './sandwichAttack/many sandwichAttack data 15750000to16499999.txt']
     process_files(input_files, bundle_process_file, bundle_process_target)
 
     # 读取bundle

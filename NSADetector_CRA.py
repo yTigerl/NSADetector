@@ -5,7 +5,7 @@ from spektral.layers.pooling import GlobalAvgPool
 token_embedding_dim = 1
 address_embedding_dim = 1
 model_file = './MODEL/2GCN 64_128 1FC 128 4 class.h5'
-type_file_path = " NSA_CRA 2GCN 64_128 1FC 128 4 class TEST 7531.txt"
+type_file_path = " NSA_CRA 2GCN 64_128 1FC 128 4 class TEST 7531 FOR DR.txt"
 def create_gcn_model(input_shapes, output_units):
     #  model 0
     X_in = Input(shape=(None, address_embedding_dim * 4 + 4), name='X_in')
@@ -310,20 +310,18 @@ MLL_target_file = "E:/Ethereum Data/Attack/label/" + "MLL" + " merge label.txt"
 
 bundle_data, bundle_labels = load_data(Non_file, Non_target_file)
 normalattack_data, normalattack_labels = load_data(CSA_file, CSA_target_file)
-# hybridattack_data, hybridattack_labels = load_data(MPS_file, MPS_target_file)
+hybridattack_data, hybridattack_labels = load_data(MPS_file, MPS_target_file)
 manyattack_data, manyattack_labels = load_data(MLS_file, MLS_target_file)
 LF_data, LF_labels = load_data(LF_file, LF_target_file)
-
-# HLM_data, HLM_labels = load_data(HLM_file, HLM_target_file)
-# LPM_data, LPM_labels = load_data(LPM_file, LPM_target_file)
-# MBS_data, MBS_labels = load_data(MBS_file, MBS_target_file)
 # LR_data, LR_labels = load_data(LR_file, LR_target_file)
-# MLL_data, MLL_labels = load_data(MLL_file, MLL_target_file)
-# sas_data, sas_labels = load_data(sas_file, sas_target)
-# sssas_data, sssas_labels = load_data(sssas_file, sssas_target)
-# sas_data = lpv2_data
-# sssas_data = ltv2_data
-# ssas_data = ltlpv2_data
+
+HLM_data, HLM_labels = load_data(HLM_file, HLM_target_file)
+LPM_data, LPM_labels = load_data(LPM_file, LPM_target_file)
+MBS_data, MBS_labels = load_data(MBS_file, MBS_target_file)
+LR_data, LR_labels = load_data(LR_file, LR_target_file)
+MLL_data, MLL_labels = load_data(MLL_file, MLL_target_file)
+MPS_data, MPS_labels = load_data(MPS_file, MPS_target_file)
+
 
 
 # hybridattack_data1 = hybridattack_data[10000:10100]
@@ -355,19 +353,18 @@ bundle_data2 = []
 hybridattack_data2 = []
 manyattack_data2 = []
 LF_data2 = []
+LR_data2 = []
 sas_data2 = []
 sssas_data2 = []
 ssas_data2 = []
 random.seed(918)
 for i in range(1):
     normalattack_data2.append(normalattack_data[random.randint(500, 700)])
-    # hybridattack_data2.append(hybridattack_data[random.randint(500, 700)])
+    hybridattack_data2.append(hybridattack_data[random.randint(500, 700)])
     bundle_data2.append(bundle_data[random.randint(500, 700)])
     manyattack_data2.append(manyattack_data[random.randint(500, 700)])
     LF_data2.append(LF_data[random.randint(500, 700)])
-    # sas_data2.append(sas_data[random.randint(1, 10)])
-    # ssas_data2.append(ssas_data[random.randint(1, 10)])
-    # sssas_data2.append(sssas_data[random.randint(1, 10)])
+    # LR_data2.append(LR_data[random.randint(500, 700)])
 
 
 # sas_data2 = (sas_data[0:10])
@@ -376,28 +373,32 @@ for i in range(1):
 
 normalattack_data = normalattack_data2
 bundle_data = bundle_data2
-# hybridattack_data = hybridattack_data2
+hybridattack_data = hybridattack_data2
 manyattack_data = manyattack_data2
 LF_data = LF_data2
+# LR_data = LR_data2
 # sas_data = sas_data2
 # sssas_data = sssas_data2
 # ssas_data = ssas_data2
 
 normalattack_graph = from_feature_to_graph_actionnode(normalattack_data)
 bundle_graph = from_feature_to_graph_actionnode(bundle_data)
-# hybridattack_graph = from_feature_to_graph_actionnode(hybridattack_data)
+hybridattack_graph = from_feature_to_graph_actionnode(hybridattack_data)
 manyattack_graph = from_feature_to_graph_actionnode(manyattack_data)
 # sas_graph = from_feature_to_graph_actionnode(sas_data)
 # sssas_graph = from_feature_to_graph_actionnode(sssas_data)
 # ssas_graph = from_feature_to_graph_actionnode(ssas_data)
 LF_graph = from_feature_to_graph_actionnode(LF_data)
+LR_graph = from_feature_to_graph_actionnode(LR_data)
 
 attackSamples = []
 attackSamples.append(normalattack_graph)
-# attackSamples.append(hybridattack_graph)
+
 attackSamples.append(bundle_graph)
 attackSamples.append(manyattack_graph)
 attackSamples.append(LF_graph)
+# attackSamples.append(hybridattack_graph)
+# attackSamples.append(LR_graph)
 # attackSamples.append(hybridattack_graph)
 # attackSamples.append(sas_graph)
 # attackSamples.append(sssas_graph)
@@ -406,40 +407,44 @@ attackSamples.append(LF_graph)
 # sas_graph = sas_graph[10:]
 # sssas_graph = sssas_graph[10:]
 
-CSA_file = "E:/Ethereum Data/Attack/bundle formatting/" + "CSA" + "/merge all.txt"
-CSA_target_file = "E:/Ethereum Data/Attack/label/" + "CSA" + " merge label all.txt"
-MLS_file = "E:/Ethereum Data/Attack/bundle formatting/" + "MLS" + "/merge all.txt"
-MLS_target_file = "E:/Ethereum Data/Attack/label/" + "MLS" + " merge label all.txt"
-LF_file = "E:/Ethereum Data/Attack/bundle formatting/" + "LF" + "/merge all.txt"
-LF_target_file = "E:/Ethereum Data/Attack/label/" + "LF" + " merge label all.txt"
-Non_file = "E:/Ethereum Data/Attack/bundle formatting/" + "Non" + "/merge all.txt"
-Non_target_file = "E:/Ethereum Data/Attack/label/" + "Non" + " merge label all.txt"
+# CSA_file = "E:/Ethereum Data/Attack/bundle formatting/" + "CSA" + "/merge all.txt"
+# CSA_target_file = "E:/Ethereum Data/Attack/label/" + "CSA" + " merge label all.txt"
+# MLS_file = "E:/Ethereum Data/Attack/bundle formatting/" + "MLS" + "/merge all.txt"
+# MLS_target_file = "E:/Ethereum Data/Attack/label/" + "MLS" + " merge label all.txt"
+# LF_file = "E:/Ethereum Data/Attack/bundle formatting/" + "LF" + "/merge all.txt"
+# LF_target_file = "E:/Ethereum Data/Attack/label/" + "LF" + " merge label all.txt"
+# Non_file = "E:/Ethereum Data/Attack/bundle formatting/" + "Non" + "/merge all.txt"
+# Non_target_file = "E:/Ethereum Data/Attack/label/" + "Non" + " merge label all.txt"
 bundle_data1, bundle_labels = load_data(Non_file, Non_target_file)
 normalattack_data1, normalattack_labels = load_data(CSA_file, CSA_target_file)
-# hybridattack_data, hybridattack_labels = load_data(MPS_file, MPS_target_file)
+# hybridattack_data1, hybridattack_labels = load_data(MPS_file, MPS_target_file)
 manyattack_data1, manyattack_labels = load_data(MLS_file, MLS_target_file)
 LF_data1, LF_labels = load_data(LF_file, LF_target_file)
-# hybridattack_data1 = hybridattack_data1[:100]
-# bundle_data1 = bundle_data1[:100]
-# normalattack_data1 = normalattack_data1[:100]
-# manyattack_data1 = manyattack_data1[:100]
+LR_data1, LR_labels = load_data(LR_file, LR_target_file)
 
 
-normalattack_graph1 = from_feature_to_graph_actionnode(normalattack_data1)
-# hybridattack_graph1 = from_feature_to_graph_actionnode(hybridattack_data1)
-bundle_graph1 = from_feature_to_graph_actionnode(bundle_data1)
-manyattack_graph1 = from_feature_to_graph_actionnode(manyattack_data1)
-# sssas_graph1 = from_feature_to_graph_actionnode(sssas_data1)
-# ssas_graph1 = from_feature_to_graph_actionnode(ssas_data1)
-# sas_graph1 = from_feature_to_graph_actionnode(sas_data1)
-LF_graph1 = from_feature_to_graph_actionnode(LF_data1)
 
-# HLM_graph1 = from_feature_to_graph_actionnode(HLM_data1)
-# LPM_graph1 = from_feature_to_graph_actionnode(LPM_data1)
-# MBS_graph1 = from_feature_to_graph_actionnode(MBS_data1)
-# LR_graph1 = from_feature_to_graph_actionnode(LR_data1)
-# MLL_graph1 = from_feature_to_graph_actionnode(MLL_data1)
-# MPS_graph1 = from_feature_to_graph_actionnode(MPS_data1)
+normalattack_graph1 = from_feature_to_graph_actionnode(normalattack_data1[:500])
+
+bundle_graph1 = from_feature_to_graph_actionnode(bundle_data1[:500])
+manyattack_graph1 = from_feature_to_graph_actionnode(manyattack_data1[:500])
+LF_graph1 = from_feature_to_graph_actionnode(LF_data1[:500])
+# LR_graph1 = from_feature_to_graph_actionnode(LR_data1[:500])
+# hybridattack_graph1 = from_feature_to_graph_actionnode(hybridattack_data1[:500])
+
+
+HLM_graph1 = from_feature_to_graph_actionnode(HLM_data[:500])
+LPM_graph1 = from_feature_to_graph_actionnode(LPM_data[:500])
+MBS_graph1 = from_feature_to_graph_actionnode(MBS_data[:500])
+LR_graph1 = from_feature_to_graph_actionnode(LR_data[:500])
+MLL_graph1 = from_feature_to_graph_actionnode(MLL_data[:500])
+MPS_graph1 = from_feature_to_graph_actionnode(MPS_data[:500])
+# HLM_graph1 = from_feature_to_graph_actionnode(HLM_data)
+# LPM_graph1 = from_feature_to_graph_actionnode(LPM_data)
+# MBS_graph1 = from_feature_to_graph_actionnode(MBS_data)
+# LR_graph1 = from_feature_to_graph_actionnode(LR_data)
+# MLL_graph1 = from_feature_to_graph_actionnode(MLL_data)
+# MPS_graph1 = from_feature_to_graph_actionnode(MPS_data)
 
 # with open("./repeatTestData/incorrect.txt", 'a') as f_out:
 
@@ -470,9 +475,9 @@ thresholds = []
 majors = []
 
 # for major in np.arange(len(attackSamples[0]) * 1 / 2, len(attackSamples[0])+1, 1):
-# for major in np.arange(8, len(attackSamples[0]), 1):
+# for major in np.arange(8, len(attackSamples[0]), 1):92.38
 # for major in np.arange(4, 8, 1):
-for threshold in np.arange(0.6, 0.64, 0.05):
+for threshold in np.arange(0.71, 0.75, 0.01):
 # for threshold in np.arange(0.05, 1, 0.05):
     majors.append(major)
     thresholds.append(threshold)
@@ -489,16 +494,13 @@ for threshold in np.arange(0.6, 0.64, 0.05):
                             [2] * len(manyattack_data1), testdir + "many incorrect" + file)
     bundleAccuracy = testAccuracy(model, threshold, major, (bundle_graph1), attackSamples, [1]*len(bundle_data1), testdir + "bundle incorrect" + file)
 
-    # HLMAccuracy = testAccuracy(model, threshold, major, (HLM_graph1), attackSamples,
-    #                               [-1] * len(HLM_data1), testdir + "HLM incorrect" + file)
-    # LPMAccuracy = testAccuracy(model, threshold, major, (LPM_graph1), attackSamples,
-    #                         [-1] * len(LPM_data1), testdir + "LPM incorrect" + file)
-    # MBSAccuracy = testAccuracy(model, threshold, major, (MBS_graph1), attackSamples,
-    #                                   [-1] * len(MBS_data1), testdir + "MBS incorrect" + file)
-    # MLLAccuracy = testAccuracy(model, threshold, major, (MLL_graph1), attackSamples,
-    #                                   [-1] * len(MLL_data1), testdir + "MLL incorrect" + file)
-    # LRAccuracy = testAccuracy(model, threshold, major, (LR_graph1), attackSamples,
-    #                                   [-1] * len(LR_data1), testdir + "LR incorrect" + file)
+    HLMAcc = testAccuracy(model, threshold, major, HLM_graph1, attackSamples, [-1]*len(HLM_graph1), testdir + "HLM incorrect" + file)
+    LPMAcc = testAccuracy(model, threshold, major, LPM_graph1, attackSamples, [-1]*len(LPM_graph1), testdir + "LPM incorrect" + file)
+    MBSAcc = testAccuracy(model, threshold, major, MBS_graph1, attackSamples, [-1]*len(MBS_graph1), testdir + "MBS incorrect" + file)
+    LRAcc = testAccuracy(model, threshold, major, LR_graph1, attackSamples, [-1]*len(LR_graph1), testdir + "LR incorrect" + file)
+    MLLAcc = testAccuracy(model, threshold, major, MLL_graph1, attackSamples, [-1] * len(MLL_graph1),
+                          testdir + "MLL incorrect" + file)
+    MPSAcc = testAccuracy(model, threshold, major, MPS_graph1, attackSamples, [-1]*len(MPS_graph1), testdir + "MPS incorrect" + file)
 
 # acc.write(str(sasAcc) + ' ' + str(ssasAcc) + ' ' + str(sssasAcc) + ' ' + '\n')
     acc.flush()

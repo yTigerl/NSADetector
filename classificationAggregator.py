@@ -1,4 +1,4 @@
-from siameseNet.gnnDataLoader import load_gnnsandwichTrainDataset, load_data, from_feature_to_graph_actionnode
+from gnnDataLoader import load_gnnsandwichTrainDataset, load_data, from_feature_to_graph_actionnode
 import numpy as np
 import tensorflow as tf
 from keras.models import Model
